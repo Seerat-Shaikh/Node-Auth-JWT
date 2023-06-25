@@ -1,29 +1,56 @@
 <%- include('partials/header'); -%>
 
 <form action="/login">
-    <h2>Log in</h2>
-    <label for="email">Email</label>
-    <input type="text" name="email" required />
-    <div class="email error"></div>
-    <label for="password">Password</label>
-    <input type="password" name="password" required />
-    <div class="password error"></div>
-    <button>Log in</button>
+  <h2>Log in</h2>
+  <label for="email">Email</label>
+  <input type="text" name="email" required />
+  <div class="email error"></div>
+  <label for="password">Password</label>
+  <input type="password" name="password" required />
+  <div class="password error"></div>
+  <button>Log in</button>
 </form>
-  
 
 <%- include('partials/footer'); -%>
 
 <script>
-    const form = document.querySelector('form');
-  
-    form.addEventListener('submit', (e) => {
-      e.preventDefault(); //This will prevent to show refreshing page
-  
-      // get values
-      const email = form.email.value;
-      const password = form.password.value;
-  
-      console.log(email, password);
-    });
+  const form = document.querySelector("form");
+  const emailError = document.querySelector(".email.error");
+  const passwordError = document.querySelector(".password.error");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault(); //This will prevent to show refreshing page
+
+    // reset errors
+    // if there is no error so error msgs will be vanish from screen after submitting
+    emailError.textContent = "";
+    passwordError.textContent = "";
+
+    // get values
+    const email = form.email.value;
+    const password = form.password.value;
+
+    try {
+      const res = await fetch("/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+      console.log(data);
+      if (data.errors) {
+        //we redirect all errors from handler errors using json
+        emailError.textContent = data.errors.email;
+        passwordError.textContent = data.errors.password;
+      }
+
+      // checking for presence of user & then redirecting it to Home Page
+      if (data.user) {
+        location.assign("/");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  });
 </script>
