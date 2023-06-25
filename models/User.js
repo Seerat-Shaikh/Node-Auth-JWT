@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, 'Please enter password'],
-        minlength: [6, 'Minimum password length is 6 character']
+        minlength: [6, 'Minimum password length is 6 characters']
     },
 });
 
@@ -30,6 +30,25 @@ userSchema.pre('save', async function (next) { //pre is before
     this.password = await bcrypt.hash(this.password, salt); //this refers to instant of user we trying to create
     next();
 });
+
+// static method to login user
+userSchema.statics.login = async function(email, password) {
+    const user = await this.findOne({ email }); // this here refers to user. It will first check email exists or not
+    if (user) {
+      const auth = await bcrypt.compare(password, user.password); //if email exists so we will compare its hashed password with the one saved in database if it matches return to screen otherwise throw error
+      if (auth) {
+        return user;
+      }
+      throw Error('incorrect password');
+    }
+    throw Error('incorrect email');
+};
+  
+  
+
+//Model based on Schema
+const User = mongoose.model('user', userSchema); //(name, schema) name must be singular what we define for database
+module.exports = User;
   
 
 //Model based on Schema
